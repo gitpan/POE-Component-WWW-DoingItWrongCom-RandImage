@@ -3,7 +3,7 @@ package POE::Component::WWW::DoingItWrongCom::RandImage;
 use warnings;
 use strict;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use POE qw( Filter::Reference  Filter::Line  Wheel::Run );
 use WWW::DoingItWrongCom::RandImage;
@@ -117,7 +117,7 @@ sub _fetch {
         for grep { !/^_/ } keys %{ $args };
 
     unless ( $args->{event} ) {
-        carp "Missing 'event' parameter to calc";
+        carp "Missing 'event' parameter to fetch";
         return;
     }
     
@@ -314,9 +314,9 @@ from L<http://www.doingitwrong.com>
 
 
 The C<spawn> method returns a
-POE::Component::WWW::DoingItWrongCom::RandImage object and takes an
-I<optional> hashref of arguments. The possible keys/values of that
-hashref are as follows:
+POE::Component::WWW::DoingItWrongCom::RandImage object and takes several
+aruments I<all of which are optional>. The possible arguments
+are as follows:
 
 =head3 alias
 
