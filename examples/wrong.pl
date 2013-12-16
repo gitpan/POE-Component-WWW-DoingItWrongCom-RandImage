@@ -1,9 +1,9 @@
-#!perl -w
+#!/usr/bin/env perl
 
 use strict;
 use warnings;
 
-use lib '../lib';
+use lib qw(lib ../lib);
 use POE qw(Component::WWW::DoingItWrongCom::RandImage);
 
 my $Total_pics_to_get = shift || 1;

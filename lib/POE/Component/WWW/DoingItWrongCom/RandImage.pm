@@ -3,7 +3,7 @@ package POE::Component::WWW::DoingItWrongCom::RandImage;
 use warnings;
 use strict;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use POE qw( Filter::Reference  Filter::Line  Wheel::Run );
 use WWW::DoingItWrongCom::RandImage;
@@ -15,7 +15,7 @@ sub spawn {
         if @_ & 1;
 
     my %params = @_;
-    
+
     $params{ lc $_ } = delete $params{ $_ } for keys %params;
 
     delete $params{options}
@@ -24,11 +24,11 @@ sub spawn {
     croak "`ua_args` parameter must be a hashref"
         if exists $params{ua_args}
             and ref $params{ua_args} ne 'HASH';
-    
+
     unless ( exists $params{ua_args}{timeout} ) {
         $params{ua_args}{timeout} = 30;
     }
-    
+
     my $self = bless \%params, $package;
 
     $self->{session_id} = POE::Session->create(
@@ -100,10 +100,10 @@ sub fetch {
 sub _fetch {
     my ( $kernel, $self ) = @_[ KERNEL, OBJECT ];
     my $sender = $_[SENDER]->ID;
-    
+
     return
         if $self->{shutdown};
-        
+
     my $args;
     if ( ref $_[ARG0] eq 'HASH' ) {
         $args = { %{ $_[ARG0] } };
@@ -112,7 +112,7 @@ sub _fetch {
         carp "First parameter must be a hashref, trying to adjust...";
         $args = { @_[ARG0 .. $#_] };
     }
-    
+
     $args->{ lc $_ } = delete $args->{ $_ }
         for grep { !/^_/ } keys %{ $args };
 
@@ -120,7 +120,7 @@ sub _fetch {
         carp "Missing 'event' parameter to fetch";
         return;
     }
-    
+
     if ( $args->{session} ) {
         if ( my $ref = $kernel->alias_resolve( $args->{session} ) ) {
             $args->{sender} = $ref->ID;
@@ -134,10 +134,10 @@ sub _fetch {
     else {
         $args->{sender} = $sender;
     }
-    
+
     $kernel->refcount_increment( $args->{sender} => __PACKAGE__ );
     $self->{wheel}->put( $args );
-    
+
     undef;
 }
 
@@ -154,14 +154,14 @@ sub _shutdown {
         unless $self->{alias};
 
     $self->{shutdown} = 1;
-    
+
     $self->{wheel}->shutdown_stdin
         if $self->{wheel};
 }
 
 sub _child_closed {
     my ( $kernel, $self ) = @_[ KERNEL, OBJECT ];
-    
+
     warn "_child_closed called (@_[ARG0..$#_])\n"
         if $self->{debug};
 
@@ -194,13 +194,13 @@ sub _child_stderr {
 
 sub _child_stdout {
     my ( $kernel, $self, $input ) = @_[ KERNEL, OBJECT, ARG0 ];
-    
+
     my $session = delete $input->{sender};
     my $event   = delete $input->{event};
 
     $kernel->post( $session, $event, $input );
     $kernel->refcount_decrement( $session => __PACKAGE__ );
-    
+
     undef;
 }
 
@@ -211,7 +211,7 @@ sub _wheel {
         binmode STDIN;
         binmode STDOUT;
     }
-    
+
     my $raw;
     my $size = 4096;
     my $filter = POE::Filter::Reference->new;
@@ -219,18 +219,18 @@ sub _wheel {
     my $wrong = WWW::DoingItWrongCom::RandImage->new(
         ua_args => $ua_args,
     );
-    
+
     while ( sysread STDIN, $raw, $size ) {
         my $requests = $filter->get( [ $raw ] );
         foreach my $req ( @$requests ) {
-        
+
             $req->{out} = $wrong->fetch;
 
             unless ( defined $req->{out} ) {
                 delete $req->{out};
                 $req->{error} = $wrong->err_str;
             }
-            
+
             my $response = $filter->put( [ $req ] );
             print STDOUT @$response;
         }
@@ -240,6 +240,8 @@ sub _wheel {
 
 1;
 __END__
+
+=encoding utf8
 
 =head1 NAME
 
@@ -291,8 +293,8 @@ from L<http://www.doingitwrong.com>
 
 =head2 spawn
 
-    my $poco = POE::Component::WWW::DoingItWrongCom::RandImage->spawn; 
-    
+    my $poco = POE::Component::WWW::DoingItWrongCom::RandImage->spawn;
+
     POE::Component::WWW::DoingItWrongCom::RandImage->spawn(
         alias => 'wrong',
     );
@@ -417,9 +419,9 @@ B<Mandatory>. An event to send the result to.
 =head3 session
 
     { session => $some_other_session_ref }
-    
+
     { session => 'some_alias' }
-    
+
     { session => $session->ID }
 
 B<Optional>. An alternative session alias, reference or ID that the

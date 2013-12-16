@@ -17,9 +17,14 @@ my $builder = Module::Build->new(
         'POE::Filter::Line'               => 1.1920,
         'POE::Wheel::Run'                 => 1.2179,
         'WWW::DoingItWrongCom::RandImage' => 0.01,
+        'perl' => '5.006',
     },
+    configure_requires => { 'Module::Build' => 0 },
     add_to_cleanup      => [ 'POE-Component-WWW-DoingItWrongCom-RandImage-*' ],
     create_makefile_pl => 'traditional',
 );
+if ( $ENV{RELEASE_TESTING} ) {
+    system('pod2text lib/POE/Component/WWW/DoingItWrongCom/RandImage.pm > README');
+}
 
 $builder->create_build_script();
